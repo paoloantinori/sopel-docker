@@ -17,6 +17,13 @@ also be a volume container); adjust the name to your likings:
 mkdir /tmp/mybot
 ```
 
+This Docker config does use an unprivileged user in the container for increased
+security. Therefore you have to give the ownership to the _sopel_ user:
+
+```
+chown -R 1000:1000 /tmp/mybot
+```
+
 Initialize the bot configuration:
 
 ```
