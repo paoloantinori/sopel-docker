@@ -18,7 +18,7 @@ RUN chmod a+rx /start.sh &&\
     cp -R /tmp/scripts/* /home/sopel/.sopel &&\
     chown -R sopel:sopel /home/sopel &&\
     rm -rf /tmp/scripts
-VOLUME /home/sopel/.sopel
+# VOLUME /home/sopel/.sopel
 
 USER sopel
 CMD /start.sh
