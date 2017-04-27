@@ -20,7 +20,6 @@ RUN chmod a+rx /start.sh &&\
     rm -rf /tmp/scripts
 # VOLUME /home/sopel/.sopel
 
-USER sopel
 CMD /start.sh
 
 ENV LANG en_US.UTF-8
@@ -39,4 +38,4 @@ ENV EXCLUDE_MODULES adminchannel,announce,calc,clock,currency,dice,etymology,ip,
 ENV TWITTER_KEY key
 ENV TWITTER_SECRET secret
 
-
+RUN dnf install -y sudo
