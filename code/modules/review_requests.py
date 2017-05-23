@@ -7,6 +7,10 @@ from sopel.formatting import colors, color, bold, underline
 import sched
 import time
 
+import os
+
+
+
 projects = [
   "fabric8",
   "camel",
@@ -32,13 +36,13 @@ projects = [
 
 
 base_url = "https://api.github.com"
-token = '3799204db0aeac1cd0c25ec8a5526d8c63381f7c'
+token = os.environ['GH_TOKEN']
 pulls_url = base_url + "/repos/jboss-fuse/:project/pulls"
 single_pull_url = pulls_url + '/:pull/reviews'
 
 headers = {
   'Accept': 'application/vnd.github.black-cat-preview+json',
-  'Authorization': 'token 3799204db0aeac1cd0c25ec8a5526d8c63381f7c'
+  'Authorization': 'token ' + token
 }
 
 def query_jira(jira_id):
