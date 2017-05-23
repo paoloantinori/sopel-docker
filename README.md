@@ -1,47 +1,82 @@
-# Sopel IRC bot Docker config
 
-Run the Sopel IRC bot in a Docker container.
+# Creating a basic S2I builder image  
 
-## Building
+## Getting started  
 
+### Files and Directories  
+| File                   | Required? | Description                                                  |
+|------------------------|-----------|--------------------------------------------------------------|
+| Dockerfile             | Yes       | Defines the base builder image                               |
+| s2i/bin/assemble       | Yes       | Script that builds the application                           |
+| s2i/bin/usage          | No        | Script that prints the usage of the builder                  |
+| s2i/bin/run            | Yes       | Script that runs the application                             |
+| s2i/bin/save-artifacts | No        | Script for incremental builds that saves the built artifacts |
+| test/run               | No        | Test script for the builder image                            |
+| test/test-app          | Yes       | Test application source code                                 |
+
+#### Dockerfile
+Create a *Dockerfile* that installs all of the necessary tools and libraries that are needed to build and run our application.  This file will also handle copying the s2i scripts into the created image.
+
+#### S2I scripts
+
+##### assemble
+Create an *assemble* script that will build our application, e.g.:
+- build python modules
+- bundle install ruby gems
+- setup application specific configuration
+
+The script can also specify a way to restore any saved artifacts from the previous image.   
+
+##### run
+Create a *run* script that will start the application. 
+
+##### save-artifacts (optional)
+Create a *save-artifacts* script which allows a new build to reuse content from a previous version of the application image.
+
+##### usage (optional) 
+Create a *usage* script that will print out instructions on how to use the image.
+
+##### Make the scripts executable 
+Make sure that all of the scripts are executable by running *chmod +x s2i/bin/**
+
+#### Create the builder image
+The following command will create a builder image named centos/python-35-centos7 based on the Dockerfile that was created previously.
 ```
-docker build -t boxbox/sopel .
+docker build -t centos/python-35-centos7 .
 ```
+The builder image can also be created by using the *make* command since a *Makefile* is included.
 
-## Running
+Once the image has finished building, the command *s2i usage centos/python-35-centos7* will print out the help info that was defined in the *usage* script.
 
-Create a directory where you want to store the config, log and data files (can
-also be a volume container); adjust the name to your likings:
-
+#### Testing the builder image
+The builder image can be tested using the following commands:
 ```
-mkdir /tmp/mybot
+docker build -t centos/python-35-centos7-candidate .
+IMAGE_NAME=centos/python-35-centos7-candidate test/run
 ```
+The builder image can also be tested by using the *make test* command since a *Makefile* is included.
 
-This Docker config does use an unprivileged user in the container for increased
-security. Therefore you have to give the ownership to the _sopel_ user:
-
+#### Creating the application image
+The application image combines the builder image with your applications source code, which is served using whatever application is installed via the *Dockerfile*, compiled using the *assemble* script, and run using the *run* script.
+The following command will create the application image:
 ```
-chown -R 1000:1000 /tmp/mybot
+s2i build test/test-app centos/python-35-centos7 centos/python-35-centos7-app
+---> Building and installing application from source...
 ```
+Using the logic defined in the *assemble* script, s2i will now create an application image using the builder image as a base and including the source code from the test/test-app directory. 
 
-Initialize the bot configuration:
-
+#### Running the application image
+Running the application image is as simple as invoking the docker run command:
 ```
-docker run --rm -it -v /tmp/mybot:/home/sopel/.sopel boxbox/sopel sopel -w
+docker run -d -p 8080:8080 centos/python-35-centos7-app
 ```
+The application, which consists of a simple static web page, should now be accessible at  [http://localhost:8080](http://localhost:8080).
 
-Create and run the bot:
-
+#### Using the saved artifacts script
+Rebuilding the application using the saved artifacts can be accomplished using the following command:
 ```
-docker run -d --name mybot -v /tmp/mybot:/home/sopel/.sopel boxbox/sopel
+s2i build --incremental=true test/test-app nginx-centos7 nginx-app
+---> Restoring build artifacts...
+---> Building and installing application from source...
 ```
-
-If you want it to autostart, add `--restart=always`.
-
-## Running Sopel commands
-
-You can, at any time, run specific Sopel commands. For example:
-
-```
-docker run --rm -it -v ... boxbox/sopel sopel --configure-modules
-```
+This will run the *save-artifacts* script which includes the custom code to backup the currently running application source, rebuild the application image, and then re-deploy the previously saved source using the *assemble* script.

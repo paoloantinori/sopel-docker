@@ -1,27 +1,26 @@
-FROM fedora:25
-MAINTAINER Paolo Antinori
+# centos/python-35-centos7
+FROM openshift/base-centos7
 
-RUN useradd -m -d /home/sopel sopel
-WORKDIR /home/sopel
+MAINTAINER Paolo Antinori <pantinor@redhat.com>
 
-RUN dnf update -y && \
-    dnf install -y git python3-enchant gettext sudo
+LABEL io.k8s.description="Platform for building Sopel IRC bots" 
+#LABEL io.openshift.s2i.destination=/tmp/src
+LABEL io.openshift.s2i.scripts-url=image:///usr/libexec/s2i
 
-RUN pip3 install git+https://github.com/sopel-irc/sopel.git
+RUN yum install -y epel-release && yum install -y git python-enchant nss_wrapper gettext python-pip && yum clean all -y
+RUN pip install git+https://github.com/sopel-irc/sopel.git
 
-COPY scripts/ /tmp/scripts
-COPY start.sh /
-# this convoluted thing is because of issues to perform `chown` across multiple commands
-RUN chmod a+rx /start.sh &&\
-    rm -rf /.sopel &&\
-    mkdir -p /.sopel &&\
-    cp -R /tmp/scripts/* /.sopel &&\
-    chown -R sopel:sopel /.sopel &&\
-    chmod a+rwx /.sopel &&\
-    rm -rf /tmp/scripts
-# VOLUME /home/sopel/.sopel
+COPY ./s2i/bin/ /usr/libexec/s2i
 
-CMD /start.sh
+# COPY ./scripts/modules /opt/app-root/src/.sopel
+# COPY ./scripts /opt/app-root/src
+# COPY start.sh /opt/app-root
+# RUN chmod +x /opt/app-root/start.sh && chown -R 1001:1001 /opt/app-root
+
+USER 1001
+WORKDIR /opt/app-root
+
+CMD ["/usr/libexec/s2i/usage"]
 
 ENV LANG=en_US.UTF-8 \
     IRC_NICK=bot_fuse_maintenance \
@@ -30,7 +29,7 @@ ENV LANG=en_US.UTF-8 \
     IRC_OWNER=paolo \
     IRC_ADMINS=paolo \
     IRC_CHANS="#fusesustaining" \
-    SOPEL_EXTRA=/.sopel/modules \
+    SOPEL_EXTRA=/opt/app-root/src/.sopel \
     EXCLUDE_MODULES=adminchannel,announce,calc,clock,currency,dice,etymology,ip,lmgtfy,ping,rand,reddit,safety,search,tell,tld,unicode_info,units,uptime,url,version,weather \
     TWITTER_KEY=key \
     TWITTER_SECRET=secret
