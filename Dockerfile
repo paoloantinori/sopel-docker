@@ -8,7 +8,7 @@ LABEL io.k8s.description="Platform for building Sopel IRC bots"
 LABEL io.openshift.s2i.scripts-url=image:///usr/libexec/s2i
 
 RUN yum install -y epel-release && yum install -y git python-enchant nss_wrapper gettext python-pip && yum clean all -y
-RUN pip install git+https://github.com/sopel-irc/sopel.git
+RUN pip install web.py git+https://github.com/sopel-irc/sopel.git
 
 COPY ./s2i/bin/ /usr/libexec/s2i
 
@@ -30,6 +30,6 @@ ENV LANG=en_US.UTF-8 \
     IRC_ADMINS=paolo \
     IRC_CHANS="#fusesustaining" \
     SOPEL_EXTRA=/opt/app-root/src/.sopel \
-    EXCLUDE_MODULES=adminchannel,announce,calc,clock,currency,dice,etymology,ip,lmgtfy,ping,rand,reddit,safety,search,tell,tld,unicode_info,units,uptime,url,version,weather \
+    EXCLUDE_MODULES=adminchannel,announce,calc,clock,currency,dice,etymology,ip,lmgtfy,ping,rand,reddit,safety,search,tld,unicode_info,units,uptime,url,version,weather \
     TWITTER_KEY=key \
     TWITTER_SECRET=secret

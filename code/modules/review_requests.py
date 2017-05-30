@@ -1,15 +1,18 @@
-import json
-import sys
-import requests
-from sopel.module import commands, NOLIMIT, example, rule, rate
-from sopel import web, tools
 from sopel.formatting import colors, color, bold, underline
-import sched
-import time
-
+from sopel.module import commands, NOLIMIT, example, rule, rate
+from threading import Thread
+import json
 import os
+import requests
+import sched
+import sys
+import time
+import web
 
-
+channels = [
+  "#paolo",
+  "#fusesustaining"
+  ]
 
 projects = [
   "fabric8",
@@ -23,17 +26,65 @@ projects = [
   "felix"
 ]
 
+bot_instance = None
 
 
-# curl -H 'Accept: application/vnd.github.black-cat-preview+json' -H 'Authorization: token 3799204db0aeac1cd0c25ec8a5526d8c63381f7c' https://api.github.com/repos/jboss-fuse/camel/pulls
+urls = (
+  # the second param here is a Class
+  '/', 'webhook',
+  '/hello', 'index'
+)
+
+class index:
+    def GET(self):
+        print bot_instance
+        print "Hello, world!"
+        for channel in channels:
+            bot_instance.say("message", channel)
+        return ""
+class webhook:
+    def POST(self):
+        print "web hook invoked"
+        data = web.data()
+        message = inspect_event(data)
+        for channel in channels:
+            bot_instance.say(message, channel)
+        print data
+# listen on port 8080
+app = web.application(urls, globals())
+server = Thread(target=app.run)
+server.setDaemon(True)
+server.start()
+
+def inspect_event(event_string):
+    message = ""
+    event = json.loads(event_string)
+    if "pull_request" in event:
+        print "it's a pull request"
+        if "review_requested" == event["action"]:
+            message = "NEW Review Request: " + event["_links"]["html"]
+    else:
+        print "it's something else"
+    return message
+
+# curl -H 'Accept: application/vnd.github.black-cat-preview+json' -H 'Authorization: token xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' https://api.github.com/repos/jboss-fuse/camel/pulls
 # .url
 # .state == open
 # .locked == false
 # 
-# curl -H 'Accept: application/vnd.github.black-cat-preview+json' -H 'Authorization: token 3799204db0aeac1cd0c25ec8a5526d8c63381f7c' https://api.github.com/repos/jboss-fuse/camel/pulls/142/reviews
+# curl -H 'Accept: application/vnd.github.black-cat-preview+json' -H 'Authorization: token xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' https://api.github.com/repos/jboss-fuse/camel/pulls/142/reviews
 # 
 # if( output empty then post)
 
+
+def setup(bot):
+    print "invoking setup"
+    global bot_instance
+    bot_instance = bot
+    print bot
+
+def configure(config):
+    config.core
 
 base_url = "https://api.github.com"
 token = os.environ['GH_TOKEN']
@@ -65,6 +116,7 @@ def pr(bot, trigger):
         response = requests.get(url, headers=headers)
         prs = response.json()
         for pr in prs:
+            print pr
             if pr["state"] == "open" and pr["locked"] == False :
                 pr_url = pr["url"]
                 pr_html_url = pr["html_url"]
