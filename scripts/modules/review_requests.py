@@ -37,19 +37,19 @@ urls = (
 
 class index:
     def GET(self):
-        print bot_instance
-        print "Hello, world!"
+        # print bot_instance
+        print ("Hello, world!")
         for channel in channels:
             bot_instance.say("message", channel)
         return ""
 class webhook:
     def POST(self):
-        print "web hook invoked"
+        print ("web hook invoked")
         data = web.data()
         message = inspect_event(data)
         for channel in channels:
             bot_instance.say(message, channel)
-        print data
+        print (data)
 # listen on port 8080
 app = web.application(urls, globals())
 server = Thread(target=app.run)
@@ -60,11 +60,11 @@ def inspect_event(event_string):
     message = ""
     event = json.loads(event_string)
     if "pull_request" in event:
-        print "it's a pull request"
+        print ("it's a pull request")
         if "review_requested" == event["action"]:
             message = "NEW Review Request: " + event["_links"]["html"]
     else:
-        print "it's something else"
+        print ("it's something else")
     return message
 
 # curl -H 'Accept: application/vnd.github.black-cat-preview+json' -H 'Authorization: token xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' https://api.github.com/repos/jboss-fuse/camel/pulls
@@ -78,10 +78,9 @@ def inspect_event(event_string):
 
 
 def setup(bot):
-    print "invoking setup"
+    print ("\ninvoking setup\n")
     global bot_instance
     bot_instance = bot
-    print bot
 
 def configure(config):
     config.core
@@ -116,7 +115,7 @@ def pr(bot, trigger):
         response = requests.get(url, headers=headers)
         prs = response.json()
         for pr in prs:
-            print pr
+            print (pr)
             if pr["state"] == "open" and pr["locked"] == False :
                 pr_url = pr["url"]
                 pr_html_url = pr["html_url"]

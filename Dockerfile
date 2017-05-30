@@ -5,9 +5,9 @@ RUN useradd -m -d /home/sopel sopel
 WORKDIR /home/sopel
 
 RUN dnf update -y && \
-    dnf install -y git python3-enchant gettext sudo
+    dnf install -y git python python-pip python2-enchant gettext sudo
 
-RUN pip3 install web.py==0.40.dev0 git+https://github.com/sopel-irc/sopel.git
+RUN pip install web.py git+https://github.com/sopel-irc/sopel.git
 
 COPY scripts/ /tmp/scripts
 COPY start.sh /
@@ -31,7 +31,7 @@ ENV LANG=en_US.UTF-8 \
     IRC_ADMINS=paolo \
     IRC_CHANS="#fusesustaining" \
     SOPEL_EXTRA=/.sopel/modules \
-    EXCLUDE_MODULES=adminchannel,announce,calc,clock,currency,dice,etymology,ip,lmgtfy,ping,rand,reddit,safety,search,tld,unicode_info,units,uptime,url,version,weather \
+    EXCLUDE_MODULES=adminchannel,announce,calc,clock,currency,dice,etymology,ip,lmgtfy,ping,rand,reddit,safety,search,tld,unicode_info,units,uptime,url,version,weather,ipython \
     TWITTER_KEY=key \
     TWITTER_SECRET=secret \
     GH_TOKEN=secret
