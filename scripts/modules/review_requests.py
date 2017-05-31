@@ -61,8 +61,8 @@ def inspect_event(event_string):
     event = json.loads(event_string)
     if "pull_request" in event:
         print ("it's a pull request")
-        if "review_requested" == event["action"]:
-            message = "NEW Review Request: " + event["_links"]["html"]
+        if event["action"] in ["review_requested", "opened", "reopened"]:
+            message = "NEW Review Request: " + event["pull_request"]["_links"]["html"]
     else:
         print ("it's something else")
     return message
