@@ -6,5 +6,5 @@ envsubst < $PWD/.sopel/default.cfg.tpl > $PWD/.sopel/default.cfg
 echo "========== Applied configuration"
 cat $PWD/.sopel/default.cfg
 echo "Current User"
-whomi
+whoami
 exec sopel
