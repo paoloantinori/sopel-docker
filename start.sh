@@ -1,4 +1,4 @@
 #!/bin/bash
 printenv
-envsubst < ${HOME}/.sopel/default.cfg.tpl > ${HOME}/.sopel/default.cfg
+envsubst < ${PWD}/.sopel/default.cfg.tpl > ${PWD}/.sopel/default.cfg
 exec sopel
