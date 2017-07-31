@@ -1,4 +1,4 @@
 #!/bin/bash
 
-envsubst < /.sopel/default.cfg.tpl > /.sopel/default.cfg
+envsubst < ${HOME}/.sopel/default.cfg.tpl > ${HOME}/.sopel/default.cfg
 exec sopel
