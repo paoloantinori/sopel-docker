@@ -7,4 +7,5 @@ echo "========== Applied configuration"
 cat $PWD/.sopel/default.cfg
 echo "Current User"
 whoami
+mkdir -v ~/test
 exec sopel
