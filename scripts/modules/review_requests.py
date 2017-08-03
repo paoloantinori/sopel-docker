@@ -130,6 +130,7 @@ def pr(bot, trigger):
                 response = response.json()
                 # print  response
                 if len(response) == 0:
+                    title = pr["title"].encode("utf-8")
                     bot.say( "[Approval Required] {0} - {1} - {2}".format(pr_html_url, pr["user"]["login"], color(pr["title"], colors.GREY)))
 
 
