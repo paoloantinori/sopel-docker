@@ -15,15 +15,19 @@ channels = [
   ]
 
 projects = [
-  "fabric8",
-  "camel",
-  "hawtio",
-  "fuse",
-  "cxf",
-  "fuseenterprise",
-  "karaf",
   "aries",
-  "felix"
+  "camel",
+  "cxf",
+  "fabric8",
+  "felix",
+  "fuse",
+  "fuseenterprise",
+  "fuse-eap",
+  "hawtio",
+  "karaf",
+  "perfectus",
+  "quickstarts-ops",
+  "wildfly-camel"
 ]
 
 bot_instance = None
@@ -113,24 +117,34 @@ def query_jira(jira_id):
 @rate(600)
 def pr(bot, trigger):
     #text = trigger.group(2)
+    tot = 0
+    
     for project in projects:
         url = pulls_url.replace(':project', project)
         # print "[PR URL] " + url
-        response = requests.get(url, headers=headers)
-        prs = response.json()
-        for pr in prs:
-            print (pr)
-            if pr["state"] == "open" and pr["locked"] == False :
-                pr_url = pr["url"]
-                pr_html_url = pr["html_url"]
-                pr_number = pr["number"]
-                url = single_pull_url.replace(':project', project).replace(':pull', str(pr_number))
-                # print "[PR reviews] " + url
-                response = requests.get(url, headers=headers)
-                response = response.json()
-                # print  response
-                if len(response) == 0:
-                    title = pr["title"].encode("utf-8")
-                    bot.say( "[Approval Required] {0} - {1} - {2}".format(pr_html_url, pr["user"]["login"], color(pr["title"], colors.GREY)))
-
+        try:
+            response = requests.get(url, headers=headers)
+            prs = response.json()
+            for pr in prs:
+                print (pr)
+                if pr["state"] == "open" and pr["locked"] == False :
+                    pr_url = pr["url"]
+                    pr_html_url = pr["html_url"]
+                    pr_number = pr["number"]
+                    url = single_pull_url.replace(':project', project).replace(':pull', str(pr_number))
+                    # print "[PR reviews] " + url
+                    try:
+                        response = requests.get(url, headers=headers)
+                        response = response.json()
+                        # print  response
+                        if len(response) == 0:
+                            tot = tot+1
+                            title = pr["title"].encode("utf-8")
+                            bot.say( "[Approval Required] {0} - {1} - {2}".format(pr_html_url, pr["user"]["login"], color(pr["title"], colors.GREY)))
+                    except:
+                        bot.say( "Error invoking {0}".format(url))
+        except:
+            bot.say( "Error invoking {0}".format(url))
+    if tot == 0:
+        bot.say( "[No pending PRs]")
 
