@@ -141,9 +141,11 @@ def pr(bot, trigger):
                             tot = tot+1
                             title = pr["title"].encode("utf-8")
                             bot.say( "[Approval Required] {0} - {1} - {2}".format(pr_html_url, pr["user"]["login"], color(pr["title"], colors.GREY)))
-                    except:
+                    except Exception as e:
+                        print traceback.format_exc()
                         bot.say( "Error invoking {0}".format(url))
-        except:
+        except Exception as e:
+            print traceback.format_exc()
             bot.say( "Error invoking {0}".format(url))
     if tot == 0:
         bot.say( "[No pending PRs]")
