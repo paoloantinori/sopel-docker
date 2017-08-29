@@ -2,12 +2,15 @@ from sopel.formatting import colors, color, bold, underline
 from sopel.module import commands, NOLIMIT, example, rule, rate
 from threading import Thread
 import json
+import logging
 import os
 import requests
 import sched
 import sys
 import time
+import traceback
 import web
+
 
 channels = [
   "#paolo",
@@ -32,6 +35,9 @@ projects = [
 
 bot_instance = None
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 urls = (
   # the second param here is a Class
@@ -40,20 +46,22 @@ urls = (
 )
 
 class index:
+    logger = logging.getLogger(__name__)
     def GET(self):
         # print bot_instance
-        print ("Hello, world!")
+        logger.info("Hello, world!")
         for channel in channels:
             bot_instance.say("message", channel)
         return ""
 class webhook:
+    logger = logging.getLogger(__name__)
     def POST(self):
-        print ("web hook invoked")
+        logger.info ("web hook invoked")
         data = web.data()
         message = inspect_event(data)
         for channel in channels:
             bot_instance.say(message, channel)
-        print (data)
+        logger.info (data)
 # listen on port 8080
 app = web.application(urls, globals())
 server = Thread(target=app.run)
@@ -64,15 +72,15 @@ def inspect_event(event_string):
     message = ""
     event = json.loads(event_string)
     if "pull_request" in event:
-        print ("it's a pull request")
-        print ("Action is: " + event["action"])
+        logger.info ("it's a pull request")
+        logger.info ("Action is: " + event["action"])
         if event["action"] in ["review_requested", "opened", "reopened"]:
             url = event["pull_request"]["_links"]["html"]["href"]
             user = event["sender"]["login"]
             message = "NEW Review Request from " + user + ": " + url
 
     else:
-        print ("it's something else")
+        logger.warning ("it's something else")
     return message
 
 # curl -H 'Accept: application/vnd.github.black-cat-preview+json' -H 'Authorization: token xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' https://api.github.com/repos/jboss-fuse/camel/pulls
@@ -86,7 +94,7 @@ def inspect_event(event_string):
 
 
 def setup(bot):
-    print ("\ninvoking setup\n")
+    logger.info ("\ninvoking setup\n")
     global bot_instance
     bot_instance = bot
 
@@ -121,31 +129,31 @@ def pr(bot, trigger):
     
     for project in projects:
         url = pulls_url.replace(':project', project)
-        # print "[PR URL] " + url
+        # logger.info "[PR URL] " + url
         try:
             response = requests.get(url, headers=headers)
             prs = response.json()
             for pr in prs:
-                print (pr)
+                logger.info (pr)
                 if pr["state"] == "open" and pr["locked"] == False :
                     pr_url = pr["url"]
                     pr_html_url = pr["html_url"]
                     pr_number = pr["number"]
                     url = single_pull_url.replace(':project', project).replace(':pull', str(pr_number))
-                    # print "[PR reviews] " + url
+                    # logger.info "[PR reviews] " + url
                     try:
                         response = requests.get(url, headers=headers)
                         response = response.json()
-                        # print  response
+                        # logger.info  response
                         if len(response) == 0:
                             tot = tot+1
                             title = pr["title"].encode("utf-8")
                             bot.say( "[Approval Required] {0} - {1} - {2}".format(pr_html_url, pr["user"]["login"], color(pr["title"], colors.GREY)))
                     except Exception as e:
-                        print traceback.format_exc()
+                        logger.error (traceback.format_exc())
                         bot.say( "Error invoking {0}".format(url))
         except Exception as e:
-            print traceback.format_exc()
+            logger.error ( traceback.format_exc())
             bot.say( "Error invoking {0}".format(url))
     if tot == 0:
         bot.say( "[No pending PRs]")
