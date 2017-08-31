@@ -76,8 +76,9 @@ def inspect_event(event_string):
         logger.info ("Action is: " + event["action"])
         if event["action"] in ["review_requested", "opened", "reopened"]:
             url = event["pull_request"]["_links"]["html"]["href"]
-            user = event["sender"]["login"]
-            message = "NEW Review Request from " + user + ": " + url
+            user = event["sender"]["login"].encode("utf-8")
+            title = event["pull_request"]["title"].encode("utf-8")
+            message = "[Approval Required] {0} - {1} - {2}".format(url, user, color(title, colors.GREY))
 
     else:
         logger.warning ("it's something else")
@@ -147,8 +148,9 @@ def pr(bot, trigger):
                         # logger.info  response
                         if len(response) == 0:
                             tot = tot+1
+                            user = pr["user"]["login"].encode("utf-8")
                             title = pr["title"].encode("utf-8")
-                            bot.say( "[Approval Required] {0} - {1} - {2}".format(pr_html_url, pr["user"]["login"], color(pr["title"], colors.GREY)))
+                            bot.say( "[Approval Required] {0} - {1} - {2}".format(pr_html_url, user, color(title, colors.GREY)))
                     except Exception as e:
                         logger.error (traceback.format_exc())
                         bot.say( "Error invoking {0}".format(url))
