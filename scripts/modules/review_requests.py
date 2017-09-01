@@ -35,7 +35,7 @@ projects = [
 
 bot_instance = None
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -61,7 +61,7 @@ class webhook:
         message = inspect_event(data)
         for channel in channels:
             bot_instance.say(message, channel)
-        logger.info (data)
+        logger.info ("Webhook data:" + data)
 # listen on port 8080
 app = web.application(urls, globals())
 server = Thread(target=app.run)
@@ -74,12 +74,14 @@ def inspect_event(event_string):
     if "pull_request" in event:
         logger.info ("it's a pull request")
         logger.info ("Action is: " + event["action"])
-        if event["action"] in ["review_requested", "opened", "reopened"]:
+        if (event["action"] in ["review_requested", "opened", "reopened"]) or (event["action"] in ["closed"]):
             url = event["pull_request"]["_links"]["html"]["href"]
             user = event["sender"]["login"].encode("utf-8")
             title = event["pull_request"]["title"].encode("utf-8")
-            message = "[Approval Required] {0} - {1} - {2}".format(url, user, color(title, colors.GREY))
-
+            if event["action"] in ["closed"]:
+                message = "[Approved or Closed] {0} - {1} - {2}".format(url, user, color(title, colors.GREY))
+            else:
+                message = "[Approval Required] {0} - {1} - {2}".format(url, user, color(title, colors.GREY))
     else:
         logger.warning ("it's something else")
     return message
