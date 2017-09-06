@@ -71,17 +71,28 @@ server.start()
 def inspect_event(event_string):
     message = ""
     event = json.loads(event_string)
+    logger.info ("Action is: " + event["action"])
     if "pull_request" in event:
         logger.info ("it's a pull request")
-        logger.info ("Action is: " + event["action"])
-        if (event["action"] in ["review_requested", "opened", "reopened"]) or (event["action"] in ["closed"]):
-            url = event["pull_request"]["_links"]["html"]["href"]
-            user = event["sender"]["login"].encode("utf-8")
-            title = event["pull_request"]["title"].encode("utf-8")
-            if event["action"] in ["closed"]:
-                message = "[Approved or Closed] {0} - {1} - {2}".format(url, user, color(title, colors.GREY))
-            else:
-                message = "[Approval Required] {0} - {1} - {2}".format(url, user, color(title, colors.GREY))
+        url = event["pull_request"]["_links"]["html"]["href"]
+        user = event["sender"]["login"].encode("utf-8")
+        title = event["pull_request"]["title"].encode("utf-8")
+        if event["action"] in ["review_requested", "opened", "reopened"]:
+            logger.info ("it's an open")
+            message = "[Approval Required] {0} - {1} - {2}".format(url, user, color(title, colors.GREY))
+        elif event["action"] in ["closed"]:
+            logger.info ("it's a closed")
+            message = "[Closed] {0} - {1} - {2}".format(url, user, color(title, colors.GREY))
+        elif event["action"] in ["submitted"]:
+            logger.info ("it's a review")
+            if "review" in event:
+                commenter = event["review"]["user"]["login"].encode("utf-8")
+                url = event["review"]["html_url"]
+                state = event["review"]["state"]
+                if "approved" == state:
+                    message = "[Commented by {0}] {1} - {2} - {3}".format(commenter ,url, user, color(title, colors.GREY) )
+                else:
+                    logger.warning ("NEED TO STUDY THIS EXECUTION BRANCH")
     else:
         logger.warning ("it's something else")
     return message
