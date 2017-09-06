@@ -90,7 +90,7 @@ def inspect_event(event_string):
                 url = event["review"]["html_url"]
                 state = event["review"]["state"]
                 if "approved" == state:
-                    message = "[Commented by {0}] {1} - {2} - {3}".format(commenter ,url, user, color(title, colors.GREY) )
+                    message = "[Approved by {0}] {1} - {2} - {3}".format(commenter ,url, user, color(title, colors.GREY) )
                 else:
                     logger.warning ("NEED TO STUDY THIS EXECUTION BRANCH")
     else:
