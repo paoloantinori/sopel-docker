@@ -30,7 +30,8 @@ projects = [
   "karaf",
   "perfectus",
   "quickstarts-ops",
-  "wildfly-camel"
+  "wildfly-camel",
+  "fuse-karaf"
 ]
 
 bot_instance = None
