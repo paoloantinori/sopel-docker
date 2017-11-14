@@ -22,7 +22,7 @@ def query_jira(jira_id):
   response = requests.get(url, headers=headers, verify=False)
   response = response.json()
   if "fields" in response:
-    summary = response["fields"]["summary"].encode("utf-8")
+    summary = response["fields"]["summary"].decode('unicode-escape').encode("utf-8")
     return "[{0}] {1} - {2}".format(jira_id, summary, color(jboss_org_case.replace(jboss_org_base_url,jboss_org_base_url_dns) + jira_id , colors.GREY))
   else:
     return "Sorry but I couldn't fetch the URL"

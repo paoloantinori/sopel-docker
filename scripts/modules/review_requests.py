@@ -76,8 +76,8 @@ def inspect_event(event_string):
     if "pull_request" in event:
         logger.info ("it's a pull request")
         url = event["pull_request"]["_links"]["html"]["href"]
-        user = event["sender"]["login"].encode("utf-8")
-        title = event["pull_request"]["title"].encode("utf-8")
+        user = event["sender"]["login"].decode('unicode-escape').encode("utf-8")
+        title = event["pull_request"]["title"].decode('unicode-escape').encode("utf-8")
         if event["action"] in ["review_requested", "opened", "reopened"]:
             logger.info ("it's an open")
             message = "[Approval Required] {0} - {1} - {2}".format(url, user, color(title, colors.GREY))
@@ -87,7 +87,7 @@ def inspect_event(event_string):
         elif event["action"] in ["submitted"]:
             logger.info ("it's a review")
             if "review" in event:
-                commenter = event["review"]["user"]["login"].encode("utf-8")
+                commenter = event["review"]["user"]["login"].decode('unicode-escape').encode("utf-8")
                 url = event["review"]["html_url"]
                 state = event["review"]["state"]
                 if "approved" == state:
@@ -162,8 +162,8 @@ def pr(bot, trigger):
                         # logger.info  response
                         if len(response) == 0:
                             tot = tot+1
-                            user = pr["user"]["login"].encode("utf-8")
-                            title = pr["title"].encode("utf-8")
+                            user = pr["user"]["login"].decode('unicode-escape').encode("utf-8")
+                            title = pr["title"].decode('unicode-escape').encode("utf-8")
                             bot.say( "[Approval Required] {0} - {1} - {2}".format(pr_html_url, user, color(title, colors.GREY)))
                     except Exception as e:
                         logger.error (traceback.format_exc())
