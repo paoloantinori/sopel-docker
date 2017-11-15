@@ -72,7 +72,8 @@ server.start()
 def inspect_event(event_string):
     message = ""
     event = json.loads(event_string)
-    logger.info ("Action is: " + event["action"])
+    if "action" in event:
+        logger.info ("Action is: " + event["action"])
     if "pull_request" in event:
         logger.info ("it's a pull request")
         url = event["pull_request"]["_links"]["html"]["href"]
@@ -92,6 +93,9 @@ def inspect_event(event_string):
                 state = event["review"]["state"]
                 if "approved" == state:
                     message = "[Approved by {0}] {1} - {2} - {3}".format(commenter ,url, user, color(title, colors.GREY) )
+                elif "commented" == state:
+                    body = event["review"]["body"]
+                    message = "[Commented by {0}] {1} - {2} - {3}: {4}".format(commenter ,url, user, color(title, colors.GREY), body.decode('unicode-escape').encode("utf-8") )
                 else:
                     logger.warning ("NEED TO STUDY THIS EXECUTION BRANCH")
     else:
