@@ -143,6 +143,7 @@ def query_jira(jira_id):
 @example('.pr')
 @rate(600)
 def pr(bot, trigger):
+    bot.say( "Looking for PRs. Hold on a second...")
     #text = trigger.group(2)
     tot = 0
     
