@@ -1,7 +1,7 @@
 FROM fedora:26
 MAINTAINER Paolo Antinori
 RUN dnf update -y && \
-    dnf install -y git python python-pip python2-enchant gettext sudo
+    dnf install -y gcc git python python-pip python2-enchant gettext sudo
 
 RUN pip install web.py git+https://github.com/sopel-irc/sopel.git
 
