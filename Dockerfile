@@ -1,4 +1,4 @@
-FROM fedora:28
+FROM fedora:latest
 MAINTAINER Paolo Antinori
 RUN dnf update -y && \
     dnf install -y gcc git python python-pip python-devel python2-enchant gettext sudo redhat-rpm-config 
